@@ -43,7 +43,7 @@ AI-SQL-Assistant/
 │   │   ├── pages/
 │   │   └── services/       # API calls (auth, query)
 │   └── package.json
-├── server/                 # Node.js + Express backend
+├── backend/                 # Node.js + Express backend
 │   ├── src/
 │   │   ├── config/         # DB connections (Mongo, Postgres)
 │   │   ├── controllers/
@@ -51,7 +51,10 @@ AI-SQL-Assistant/
 │   │   ├── models/         # Mongoose models (User, QueryHistory)
 │   │   ├── routes/
 │   │   ├── services/       # Gemini integration, schema fetcher, SQL validator
-│   │   └── utils/
+│   │   ├── utils/
+│   │   ├── app.js
+│   │   └── server.js
+│   ├── .env.example
 │   └── package.json
 └── README.md
 ```
@@ -65,11 +68,13 @@ AI-SQL-Assistant/
 
 ## Environment Variables
 
-Create a `.env` file in `server/`:
+Copy `backend/.env.example` to `backend/.env` and fill in your values:
 
 ```env
 # Server
 PORT=5000
+NODE_ENV=development
+CLIENT_ORIGIN=http://localhost:3000
 
 # MongoDB (app data: users, query history)
 MONGODB_URI=mongodb://localhost:27017/ai-sql-assistant
@@ -80,14 +85,33 @@ PG_PORT=5432
 PG_DATABASE=your_database
 PG_USER=readonly_user
 PG_PASSWORD=your_password
+PG_SCHEMA=public
 
 # Gemini API
 GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-2.5-flash
 
 # JWT
 JWT_SECRET=your_jwt_secret
 JWT_EXPIRES_IN=7d
+
+# Query safety limits
+MAX_RESULT_ROWS=100
+QUERY_TIMEOUT_MS=10000
 ```
+
+## Local Database Setup (Docker)
+
+A `docker-compose.yml` at the repo root spins up PostgreSQL and MongoDB pre-configured to match `backend/.env`:
+
+```bash
+docker compose up -d
+```
+
+- **Postgres** (`localhost:5432`, db `ai_sql_assistant`, user `app_readonly`) is auto-seeded on first start from [backend/db/seed.sql](backend/db/seed.sql) with a sample `customers` / `products` / `orders` schema — enough to try questions like *"show total revenue by product category"* or *"which customers have cancelled orders"*.
+- **MongoDB** (`localhost:27017`) stores app data (users, query history) with no auth for local dev.
+
+To reset the seeded data: `docker compose down -v && docker compose up -d`.
 
 ## Getting Started
 
@@ -96,9 +120,13 @@ JWT_EXPIRES_IN=7d
 git clone <repo-url>
 cd AI-SQL-Assistant
 
+# Start local Postgres + MongoDB
+docker compose up -d
+
 # Install backend dependencies
-cd server
+cd backend
 npm install
+# .env is already provided for local dev — just add your GEMINI_API_KEY
 
 # Install frontend dependencies
 cd ../client
@@ -109,15 +137,15 @@ npm install
 
 ```bash
 # Terminal 1 — backend
-cd server
+cd backend
 npm run dev
 
 # Terminal 2 — frontend
 cd client
-npm start
+npm run dev
 ```
 
-Frontend runs on `http://localhost:3000`, backend on `http://localhost:5000`.
+Frontend runs on `http://localhost:3000` (proxies `/api` to the backend), backend on `http://localhost:5000`.
 
 ## API Overview
 
@@ -128,6 +156,7 @@ Frontend runs on `http://localhost:3000`, backend on `http://localhost:5000`.
 | GET    | `/api/schema`         | Fetch live PostgreSQL schema          | Yes  |
 | POST   | `/api/query`          | Submit NL question, get SQL + results | Yes  |
 | GET    | `/api/query/history`  | Get user's past queries               | Yes  |
+| GET    | `/api/health`         | Health check                          | No   |
 
 ## Security Notes
 

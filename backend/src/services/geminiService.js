@@ -42,7 +42,7 @@ export async function generateSql({ question, tables }) {
     throw new AppError('GEMINI_API_KEY is not configured on the server', 500)
   }
 
-  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
+  const model = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite'
   const prompt = buildPrompt(question, tables)
 
   const response = await fetch(`${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`, {

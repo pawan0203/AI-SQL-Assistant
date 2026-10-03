@@ -173,6 +173,4 @@ Frontend runs on `http://localhost:3000` (proxies `/api` to the backend), backen
 - [ ] Rate limiting per user
 
 ## License
-
-hello 
 MIT

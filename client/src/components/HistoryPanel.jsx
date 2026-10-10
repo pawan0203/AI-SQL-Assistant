@@ -54,6 +54,7 @@ export default function HistoryPanel({ onSelect, refreshKey }) {
               className="mb-1 flex w-full flex-col gap-1 rounded-md px-3 py-2 text-left transition hover:bg-slate-800"
             >
               <span className="line-clamp-2 text-sm text-slate-200">{item.question}</span>
+              <span className="text-xs text-emerald-400">{item.mode === 'generate' ? 'Generated SQL' : 'Database query'}</span>
               <span className="truncate font-mono text-xs text-slate-500">{item.sql}</span>
             </button>
           ))}

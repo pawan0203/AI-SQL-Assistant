@@ -2,6 +2,10 @@
 
 Convert natural-language questions into safe, executable PostgreSQL queries. The assistant fetches your database schema live, uses the Gemini API to generate SQL, enforces SELECT-only validation before execution, and returns results in a clean UI.
 
+The dashboard defaults to **Generate SQL**: describe any situation and optionally paste table/column definitions or CREATE TABLE statements. Gemini returns a PostgreSQL SELECT query and explicit assumptions when schema details are missing. This mode does not connect to PostgreSQL or execute SQL; generated queries and assumptions are saved in your account's history. MongoDB, authentication, and a Gemini API key are still required.
+
+Switch to **Query connected database** to use the existing live-schema and query-execution flow against the server's configured PostgreSQL database.
+
 ## Features
 
 - **Natural language → SQL** — Ask questions in plain English; Gemini generates the corresponding PostgreSQL query.
@@ -155,10 +159,13 @@ Frontend runs on `http://localhost:3000` (proxies `/api` to the backend), backen
 | POST   | `/api/auth/login`     | Login, returns JWT                    | No   |
 | GET    | `/api/schema`         | Fetch live PostgreSQL schema          | Yes  |
 | POST   | `/api/query`          | Submit NL question, get SQL + results | Yes  |
+| POST   | `/api/query/generate` | Generate SQL from a situation and optional schema; no execution | Yes |
 | GET    | `/api/query/history`  | Get user's past queries               | Yes  |
 | GET    | `/api/health`         | Health check                          | No   |
 
 ## Security Notes
+
+`POST /api/query/generate` accepts `{ "question": "Find customers with more than five orders last month", "schema": "customers(id, name); orders(id, customer_id, ordered_at)" }`. The `schema` field is optional. It returns `{ "sql": "...", "assumptions": [], "mode": "generate", "dialect": "PostgreSQL" }`. Questions are limited to 5,000 characters and schema text to 20,000 characters. Generated SQL passes the existing SELECT-only validator; confirm any assumptions against your actual schema before using it.
 
 - The PostgreSQL user configured for query execution **should have read-only privileges** (`SELECT` only) as a defense-in-depth measure, in addition to application-level SELECT-only validation.
 - All generated SQL is validated server-side before execution — never trust or execute SQL directly from the AI response without validation.

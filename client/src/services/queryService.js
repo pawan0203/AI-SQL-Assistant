@@ -10,6 +10,11 @@ export async function runQuery(question) {
   return data
 }
 
+export async function generateQuery(question, schema) {
+  const { data } = await api.post('/query/generate', { question, schema })
+  return data
+}
+
 export async function fetchHistory() {
   const { data } = await api.get('/query/history')
   return data

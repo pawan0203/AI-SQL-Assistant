@@ -21,7 +21,7 @@ export const handleGenerate = asyncHandler(async (req, res) => {
   const sql = assertSelectOnly(generated.sql)
   const result = { sql, assumptions: generated.assumptions, mode: 'generate', dialect: 'PostgreSQL' }
   await QueryHistory.create({
-    user: req.user.id, question: question.trim(), schema: schema.trim(), ...result,
+    user: req.user.id, question: question.trim(), schemaText: schema.trim(), ...result,
   })
   res.json(result)
 })

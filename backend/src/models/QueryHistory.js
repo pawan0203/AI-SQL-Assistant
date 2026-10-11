@@ -7,7 +7,7 @@ const queryHistorySchema = new mongoose.Schema(
     sql: { type: String, required: true },
     mode: { type: String, enum: ['generate', 'database'], default: 'database' },
     dialect: { type: String, default: 'PostgreSQL' },
-    schema: { type: String, default: '' },
+    schemaText: { type: String, default: '' },
     assumptions: { type: [String], default: [] },
     columns: { type: [String], default: [] },
     rows: { type: [mongoose.Schema.Types.Mixed], default: [] },

@@ -21,7 +21,12 @@ test('general generation uses user context, validates SQL, and never accesses Po
   let prompt
   let saved
   pool.query = pool.connect = async () => { pgCalls++; throw new Error('Unexpected PostgreSQL access') }
-  QueryHistory.create = async (value) => { saved = value; return value }
+  QueryHistory.create = async (value) => {
+    const document = new QueryHistory(value)
+    await document.validate()
+    saved = value
+    return document
+  }
   globalThis.fetch = async (url, options) => {
     if (String(url).startsWith('https://generativelanguage.googleapis.com/')) {
       aiCalls++
@@ -56,13 +61,13 @@ test('general generation uses user context, validates SQL, and never accesses Po
   assert.equal(generated.data.mode, 'generate')
   assert.deepEqual(generated.data.assumptions, ['Assumed customers(name).'])
   assert.equal(saved.user, '507f1f77bcf86cd799439011')
-  assert.equal(saved.schema, '')
+  assert.equal(saved.schemaText, '')
   assert.match(prompt, /"schema":null/)
 
   aiText = JSON.stringify({ sql: 'SELECT title FROM books', assumptions: [] })
   assert.equal((await request({ question: 'List books', schema: 'books(id, title)' })).status, 200)
   assert.match(prompt, /books\(id, title\)/)
-  assert.equal(saved.schema, 'books(id, title)')
+  assert.equal(saved.schemaText, 'books(id, title)')
 
   const callsBeforeValidation = aiCalls
   for (const body of [{ question: '' }, { question: 42 }, { question: 'x', schema: [] }, { question: 'x'.repeat(5001) }, { question: 'x', schema: 'x'.repeat(20001) }]) {

@@ -6,6 +6,8 @@ The dashboard defaults to **Generate SQL**: describe any situation and optionall
 
 Switch to **Query connected database** to use the existing live-schema and query-execution flow against the server's configured PostgreSQL database.
 
+In **Generate SQL**, users can also upload their own UTF-8 `.sql` or `.txt` schema file (up to 20 KB). The contents populate the editable schema field and are sent with the question when generating SQL. For PostgreSQL, export table definitions and relationships with `pg_dump --schema-only --no-owner --no-privileges your_database > schema.sql`. Uploading does not import or execute the file, and does not require a PostgreSQL connection on the assistant server. Binary database files and large backups with row data are not supported.
+
 ## Features
 
 - **Natural language → SQL** — Ask questions in plain English; Gemini generates the corresponding PostgreSQL query.
